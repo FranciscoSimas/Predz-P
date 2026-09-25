@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'pt-PT' CHECK (locale IN ('pt-PT', 'en'));

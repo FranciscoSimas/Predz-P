@@ -1,0 +1,46 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+.env
+.env.*
+!.env.example
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local setup/pull artifacts (never part of the app)
+/_git_pull_log.txt
+/_winget_git_install.txt
+/src/routes/*(1).tsx
+/src/routes/auth.tsx
+/src/routes/auth.callback.tsx
+/src/routes/auth.index.tsx
+
+# Legal archive (DPAs, transcripts) — keep local / Drive, not in git
+/legal/

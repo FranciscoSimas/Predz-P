@@ -1,0 +1,19 @@
+# Predz — https://predz.app
+User-agent: *
+Allow: /
+
+# Auth / app (crawlável mas sem prioridade de indexação via sitemap)
+Disallow: /home
+Disallow: /profile
+Disallow: /explore
+Disallow: /create
+Disallow: /join
+Disallow: /admin
+Disallow: /welcome
+Disallow: /t/
+Disallow: /auth/callback
+Disallow: /auth/forgot-password
+Disallow: /auth/update-password
+Disallow: /api/
+
+Sitemap: https://predz.app/sitemap.xml

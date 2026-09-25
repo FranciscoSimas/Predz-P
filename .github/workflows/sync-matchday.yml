@@ -1,0 +1,61 @@
+name: Matchday smart sync
+
+# Dispatched by Supabase pg_cron + pg_net when a matchday session is active
+# (see sync/README.md). No GitHub schedule — idle days cost zero Actions minutes.
+# Manual workflow_dispatch remains for tests.
+
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: dry-run or import
+        required: true
+        default: import
+        type: choice
+        options:
+          - dry-run
+          - import
+
+permissions:
+  contents: read
+
+concurrency:
+  group: football-data-matchday
+  cancel-in-progress: true
+
+jobs:
+  matchday:
+    name: matchday / ALL
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: sync
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.23.x"
+          cache: true
+          cache-dependency-path: sync/go.sum
+
+      - name: Build sync binary
+        run: go build -o syncbin .
+
+      - name: Run matchday sync
+        run: >-
+          ./syncbin
+          --mode=matchday
+          --competition=ALL
+          --dry-run=${{ github.event.inputs.operation == 'dry-run' }}
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -1,0 +1,43 @@
+name: Go sync checks
+
+on:
+  push:
+    paths:
+      - "sync/**"
+      - ".github/workflows/sync-go-ci.yml"
+      - ".github/workflows/sync-football-data.yml"
+  pull_request:
+    paths:
+      - "sync/**"
+      - ".github/workflows/sync-go-ci.yml"
+      - ".github/workflows/sync-football-data.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: sync
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.23.x"
+          cache: false
+
+      - name: Format in runner
+        run: gofmt -w .
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test ./...

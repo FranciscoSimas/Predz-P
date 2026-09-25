@@ -1,0 +1,80 @@
+name: Validate football data sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Sync mode
+        required: true
+        default: daily
+        type: choice
+        options:
+          - daily
+          - matchday
+      competition:
+        description: football-data.org competition code (or ALL)
+        required: true
+        default: ALL
+        type: string
+      operation:
+        description: Operation (always validate with dry-run first)
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - import
+
+  # Daily sync 2× — Atlantic/Azores summer (UTC+0): 07:00 and 19:00.
+  # Winter (UTC-1): ≈ 06:00 / 18:00 Açores. Accept ±1h drift vs clock.
+  schedule:
+    - cron: "0 7 * * *"
+    - cron: "0 19 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: football-data-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: ${{ github.event_name == 'schedule' && 'cron-daily' || format('{0} / {1} / {2}', inputs.operation, inputs.mode, inputs.competition) }}
+    runs-on: ubuntu-latest
+    environment: Production
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: sync
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.23.x"
+          cache: true
+          cache-dependency-path: sync/go.sum
+
+      - name: Test (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        run: go test ./...
+
+      - name: Build sync binary
+        run: go build -o syncbin .
+
+      - name: Run sync
+        run: >-
+          ./syncbin
+          --mode="${{ github.event_name == 'schedule' && 'daily' || inputs.mode }}"
+          --competition="${{ github.event_name == 'schedule' && 'ALL' || inputs.competition }}"
+          --dry-run="${{ github.event_name == 'schedule' && 'false' || (inputs.operation != 'import') }}"
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
