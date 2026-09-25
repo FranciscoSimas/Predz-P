@@ -1,4 +1,4 @@
-# **Last update:** 25/09/2026
+# **Last update:** 29/07/2026
 
 Public portfolio clone of the private original repo [`Fantasy-Futebol`](https://github.com/FranciscoSimas/Fantasy-Futebol). Same codebase snapshot, no git history.
 
